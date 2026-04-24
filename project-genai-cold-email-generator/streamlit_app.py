@@ -1,13 +1,27 @@
-# streamlit_app.py - Entry point for Streamlit Cloud
-import sys
+from app.main import create_streamlit_app, Chain, Portfolio, clean_text
+import streamlit as st
 import os
-from pathlib import Path
+from dotenv import load_dotenv
 
-# Add the app directory to Python path
-sys.path.append(os.path.join(Path(__file__).parent, "app"))
+# Load environment
+load_dotenv()
 
-# Import and run the main app
-from app.main import main as run_app
+# Check API key
+api_key = None
+try:
+    api_key = st.secrets.get("GROQ_API_KEY")
+except:
+    pass
 
-if __name__ == "__main__":
-    run_app()
+if not api_key:
+    api_key = os.getenv("GROQ_API_KEY")
+
+if not api_key:
+    st.error("Please add GROQ_API_KEY to Secrets (Settings → Secrets)")
+    st.stop()
+
+# Initialize and run
+chain = Chain()
+portfolio = Portfolio()
+st.set_page_config(layout="wide", page_title="Job Application Assistant", page_icon="📧")
+create_streamlit_app(chain, portfolio, clean_text)
