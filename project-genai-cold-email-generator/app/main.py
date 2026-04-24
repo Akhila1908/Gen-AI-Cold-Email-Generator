@@ -5,6 +5,26 @@ from portfolio import Portfolio
 from utils import clean_text
 import PyPDF2
 import io
+import os
+from dotenv import load_dotenv
+
+# Load environment variables at start
+load_dotenv()
+
+# Check for API key at startup
+if not os.getenv("GROQ_API_KEY"):
+    st.error("""
+    ## ⚠️ API Key Missing!
+    
+    Please set up your Groq API key:
+    
+    1. Create a `.env` file in the project root
+    2. Add your API key: `GROQ_API_KEY=your_key_here`
+    3. Restart the application
+    
+    Get your free API key from [console.groq.com](https://console.groq.com/keys)
+    """)
+    st.stop()
 
 def extract_text_from_pdf(uploaded_file):
     """Extract text from uploaded PDF file"""
