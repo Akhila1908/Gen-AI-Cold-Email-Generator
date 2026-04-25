@@ -3,6 +3,7 @@ from langchain_community.document_loaders import WebBaseLoader
 from chains import Chain
 from portfolio import Portfolio
 from utils import clean_text
+from app.chains import Chain
 import PyPDF2
 import io
 import os
