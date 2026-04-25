@@ -1,9 +1,11 @@
 import streamlit as st
 from langchain_community.document_loaders import WebBaseLoader
-from chains import Chain
-from portfolio import Portfolio
-from utils import clean_text
+
+# FIXED: Use absolute imports from app package
 from app.chains import Chain
+from app.portfolio import Portfolio
+from app.utils import clean_text
+
 import PyPDF2
 import io
 import os
@@ -103,7 +105,7 @@ def create_streamlit_app(llm, portfolio, clean_text):
                     if jobs:
                         job = jobs[0]
                         
-                        # Extracted job details - all in left side
+                        # Extracted job details
                         st.subheader("📌 Extracted Job Details")
                         st.markdown(f"**Role:** {job.get('role', 'N/A')}")
                         st.markdown(f"**Experience:** {job.get('experience', 'N/A')}")
@@ -151,30 +153,14 @@ def create_streamlit_app(llm, portfolio, clean_text):
                                 comparison.get('missing_skills', [])
                             )
                         
-                        # Email displayed in full width without horizontal scroll
                         st.subheader("📧 Application Email")
-                        
-                        # Store email in session state for copy functionality
-                        st.session_state['generated_email'] = email
-                        
-                        # Use text_area to show full email
                         st.text_area(
-                            "Your Application Email (Copy below)", 
+                            "Your Application Email", 
                             value=email, 
                             height=400, 
-                            key="application_email_display",
-                            label_visibility="collapsed"
+                            key="application_email_display"
                         )
                         
-                        # Working copy button - Version 1 (Simple)
-                        col1, col2, col3 = st.columns([1, 2, 1])
-                        with col2:
-                            if st.button("📋 Copy Email to Clipboard", use_container_width=True):
-                                # Use Streamlit's built-in write with pyperclip or just provide instructions
-                                st.info("Select all text above and press Ctrl+C (Cmd+C on Mac) to copy")
-                                st.balloons()
-                        
-                        # Alternative: Show a download button as backup
                         st.download_button(
                             label="📥 Download Email as Text File",
                             data=email,
@@ -184,38 +170,31 @@ def create_streamlit_app(llm, portfolio, clean_text):
                         )
                         
                     else:
-                        st.error("Could not extract job details from the URL. Please check if it's a valid job posting.")
+                        st.error("Could not extract job details from the URL.")
                         
                 except Exception as e:
                     st.error(f"An Error Occurred: {str(e)}")
-                    st.info("Try pasting the job description directly if URL extraction fails.")
-
 
 if __name__ == "__main__":
-    # Load environment variables
     load_dotenv()
     
-    # Check for API key
     if not os.getenv("GROQ_API_KEY"):
         st.error("""
         ## ⚠️ API Key Missing!
         
-        Please set up your Groq API key:
+        Please set up your Groq API key in Streamlit Secrets:
         
-        1. Create a `.env` file in the project root
-        2. Add your API key: `GROQ_API_KEY=your_key_here`
-        3. Restart the application
+        1. Go to **Settings → Secrets**
+        2. Add: `GROQ_API_KEY = "your_key_here"`
         
-        Get your free API key from [console.groq.com](https://console.groq.com/keys)
+        Or create a `.env` file locally.
         """)
         st.stop()
     
-    # Initialize components
     try:
         chain = Chain()
         portfolio = Portfolio()
         st.set_page_config(layout="wide", page_title="Job Application Assistant", page_icon="📧")
         create_streamlit_app(chain, portfolio, clean_text)
     except Exception as e:
-        st.error(f"Failed to initialize application: {str(e)}")
-        st.info("Make sure your Groq API key is valid and you have installed all requirements.")
+        st.error(f"Failed to initialize: {str(e)}")
